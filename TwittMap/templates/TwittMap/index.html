@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+  <head>
+        <title>TwittMap</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <title>Marker Clustering</title>
+        <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%;
+        }
+        </style>
+
+  </head>
+  <body>
+   <nav class="navbar  navbar-inverse  navbar-fixed-top">
+  <div class="container">
+  <button type="button" class="navbar-toggle"
+  data-toggle="collapse"
+  data-target=".navbar-collapse"
+  >
+  <span class="sr-only"> Toggle navigation</span>
+  <span class="icon-bar"> </span>
+  <span class="icon-bar"> </span>
+  <span class="icon-bar"> </span>
+  </button>
+
+      <a class="navbar-brand" href="#">TwittMap</a>
+       <div class="navbar-collapse collapse">
+
+           <ul class="nav navbar-nav navbar-right">
+
+
+
+                         <form id="new_user_form">{% csrf_token %}
+
+                           <div class="form-inline"  style="font-size: 3em; line-height: 1em;">
+
+
+
+                        <select class="form-control" name="searchText" id="searchText">
+                            <option value="select">Select</option>
+                            <option value="love">Love</option>
+                            <option value="job">Job</option>
+                            <option value="work">Work</option>
+                            <option value="new york">New York</option>
+                            <option value="Atlanta">Atlanta</option>
+                            <option value="united">United</option>
+                            <option value="happy">Happy</option>
+                            <option value="the">The</option>
+                            <option value="photo">Photo</option>
+                            <option value="vegas">Vegas</option>
+                        </select>
+
+
+                        <input type="submit" class="btn btn-default">
+                                </div>
+
+                        </form>
+
+					 </ul>
+			   </li>
+		   </ul>
+       </div>
+  </div>
+</nav>
+
+
+
+     <div class="container">
+       <div class="navbar-text pull=left">
+
+	   </div>
+
+	 </div>
+   </div>
+
+
+
+
+    </div>
+      <ul class="nav navbar-nav navbar-right">
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+</header>
+    <div id="map"></div>
+
+        <script>
+      function initMap() {
+        //alert("initmap")
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 2,
+          center: {lat: 0, lng: 0}
+        });
+
+        // Create an array of alphabetical characters used to label the markers.
+             }
+      var locations = [
+      ]
+      var markers,markerCluster;
+        function plotmap(){
+        //alert("here");
+        var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        // Add some markers to the map.
+        // Note: The code uses the JavaScript Array.prototype.map() method to
+        // create an array of markers based on a given "locations" array.
+        // The map() method here has nothing to do with the Google Maps API.
+        markers = locations.map(function(location, i) {
+          return new google.maps.Marker({
+            position: location,
+            label: labels[i % labels.length]
+          });
+        });
+
+        // Add a marker clusterer to manage the markers.
+        markerCluster = new MarkerClusterer(map, markers,
+            {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+
+        }
+
+    </script>
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+    </script>
+
+
+    <script  type="text/javascript">
+    var item="None"
+        
+    $(document).on('submit','#new_user_form',function loadmap(e) {
+        e.preventDefault();
+        //item="None";
+
+        if(item!=document.getElementById("searchText").value){
+           item=document.getElementById("searchText").value;    
+           // alert(item);
+           initMap();
+
+        }
+        locations = []
+        $.ajax({
+           type:'POST',
+            url:'user/create/',
+            data:{
+                searchString:$('#searchText option:selected').val(),
+           },
+            success:function (data) {
+
+
+                var temp_dict = {}
+                var coordinates = JSON.parse(data)
+                for(var key in coordinates){
+                    if (coordinates.hasOwnProperty(key)){
+                        var value=coordinates[key];
+                        temp_dict["lat"] = parseFloat(value)
+                        temp_dict["lng"] = parseFloat(key)
+                        locations.push({
+                            lat: parseFloat(value),
+                            lng: parseFloat(key)
+
+                        });
+                    }
+                }
+                plotmap();
+                setTimeout(function(){ loadmap(e);}, 2000);
+            }
+        });
+    });
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCqxLFSvL495HEEj28qiWEM7KvnATYUM1o&callback=initMap">
+    </script>
+  </body>
+</html>
